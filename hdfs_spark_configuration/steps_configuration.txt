@@ -1,0 +1,259 @@
+# install_hadoop_spark_hive
+
+# INSTALL HADOOP AND USER
+0) create user hadoop: sudo adduser hadoop and use this user:su - hadoop
+1) go to the link in browser https://hadoop.apache.org/releases.html
+2) click in binary download and copy the recomend link (example: https://hadoop.apache.org/releases.html)
+3) go to directory : cd 
+4) download hadoop : wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz
+5) descompact file : tar -xzf hadoop-3.3.1.tar.gz 
+6) remove .gz : rm hadoop-3.3.1.tar.gz
+
+# CONFIGURATION HADOOP
+
+1) confirm exist java : java --version
+2) create ssh-keygen if not exists: ssh-keygen
+3) copy public kays to authorized keys in local host, to acess other users: cat .ssh/id_rsa.pub >> .ssh/authorized_keys
+4) enter in hadoop folder: cd ~/hadoop-3.3.1/etc/hadoop
+5) enter in core site file: nano core-site.xml
+6) in core-site.xml put this code and save: 
+"
+<configuration>
+        <property> 
+                <name>fs.defaultFS</name>
+                <value>hdfs://localhost:9000</value>
+        </property>
+</configuration>
+7) enter in hdfs site file: nano hdfs-site.xml
+8) in hdfs-site.xml put this code and save: 
+<configuration>
+        <property> 
+                <name>dfs.replication</name>
+                <value>1</value>
+        </property>
+        <property>
+        	<name>dfs.namenode.name.dir</name>
+        	<value>/home/luis/hdfs/namenode/</value>
+        </property>
+        <property>
+        	<name>dfs.datanode.data.dir</name>
+        	<value>/home/luis/hdfs/datanode/</value>
+        </property>
+</configuration>
+"
+9) creating a folders configuration (hdfs/ namenode and datanode) 
+10) verify if exist this folder: ls /usr/lib/jvm/java-8-openjdk-amd64/
+11) return hadoop folder: cd ~/hadoop-3.3.1/etc/hadoop and enter in : nano hadoop-env.sh
+12) replace line: # export JAVA_HOME=
+              to: export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+13) enter in folder : cd ~/hadoop-3.3.1/bin
+14) format app with: ./hdfs namenode -format
+15) initiate system : cd ~/hadoop-3.3.1/sbin and : ./start-dfs.sh
+17) see web page: http://localhost:9870/dfshealth.html#tab-overview
+18) stop system: cd ~/hadoop-3.3.1/sbin and : ./stop-dfs.sh
+
+notes: 
+in point 6 we assume that hdfs id expost in rote 
+in point 8 we configuring the hdfs system
+
+# CONFIGURATION YARN
+1) configure yarn site: nano ~/hadoop-3.3.0/etc/hadoop/yarn-site.xml
+<configuration>
+	<property>
+		<name>yarn.resourcemanager.scheduler.class</name>
+		<value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value> 
+	</property>
+	<property>
+		<name>yarn.scheduler.capacity.root.queues</name>
+		<value>prod,dev</value>
+	</property>
+	<property>
+		<name>yarn.scheduler.capacity.prod.capacity</name>
+		<value>0.5</value>
+	</property>
+	<property>
+		<name>yarn.scheduler.capacity.dev.capacity</name> 
+		<value>0.5</value>
+	</property>
+	<property>
+		<name>yarn.scheduler.capacity.dev.maximum-capacity</name>
+		<value>0.5</value>
+	</property>
+	<property>
+		<name>yarn.scheduler.capacity.prod.maximum-capacity</name>
+		<value>0.7</value>
+	</property>
+		
+</configuration>
+
+2) configure capacity scheduler: nano ~/hadoop-3.3.1/etc/hadoop/capacity-scheduler.xml
+replace: 
+  <property>
+    <name>yarn.scheduler.capacity.root.queues</name>
+    <value>default</value>
+    <description>
+      The queues at the this level (root is the root queue).
+    </description>
+  </property>
+to:
+  <property>
+    <name>yarn.scheduler.capacity.root.queues</name>
+    <value>prod, dev</value>
+    <description>
+      The queues at the this level (root is the root queue).
+    </description>
+  </property>
+
+replace:
+  <property>
+    <name>yarn.scheduler.capacity.root.default.capacity</name>
+    <value>100</value>
+    <description>Default queue target capacity.</description>
+  </property>
+to : 
+  <property>
+    <name>yarn.scheduler.capacity.root.prod.capacity</name>
+    <value>50</value>
+    <description>Production queue target capacity.</description>
+  </property>
+  
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.capacity</name>
+    <value>50</value>
+    <description>Development queue target capacity.</description>
+  </property>
+  
+replace:
+  <property>
+    <name>yarn.scheduler.capacity.root.default.maximum-capacity</name>
+    <value>100</value>
+    <description>
+      The maximum capacity of the default queue.
+    </description>
+  </property>
+to:
+  <property>
+    <name>yarn.scheduler.capacity.root.prod.maximum-capacity</name>
+    <value>70</value>
+    <description>
+      The maximum capacity of the default queue.
+    </description>
+  </property>
+
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.maximum-capacity</name>
+    <value>50</value>
+    <description>
+      The maximum capacity of the default queue.
+    </description>
+  </property>
+
+replace: 
+all ".default." to "."
+
+3) enter in folder : cd ~/hadoop-3.3.1/bin
+4) format app with: ./hdfs namenode -format
+5) initiate system : cd ~/hadoop-3.3.1/sbin and : ./start-dfs.sh
+7) see web page: http://localhost:9870/dfshealth.html#tab-overview
+8) stop system: cd ~/hadoop-3.3.1/sbin and : ./stop-dfs.sh
+9) start yarn: ~/hadoop-3.3.1/sbin/start-yarn.sh
+10) see web page: http://localhost:8088
+11) enter in folder: cd ~/hadoop-3.3.1/bin
+
+# USE AND TEST HDFS
+1) enter in folder: cd ~/hadoop-3.3.1/bin
+2) create file: nano ~/test.csv 
+   with:
+Name, Salary
+Tom, 3000
+Jack, 4000
+Sarah, 4500
+
+3) put the file in hdfs: ./hdfs dfs -put ~/test.csv /
+4) verify file : ./hdfs dfs -ls /
+5) create folder: ./hdfs dfs -mkdir /test_data
+6) verify file : ./hdfs dfs -ls /
+7) move file to folder: ./hdfs dfs -mv /test.csv /test_data/test.csv
+8) verify folder : ./hdfs dfs -ls /test_data
+
+
+
+# INSTALLING SPARK
+1) go to : https://spark.apache.org/downloads.html
+2) click in download Spark and copy link : https://dlcdn.apache.org/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz
+3)go the directory: cd and download spark: wget https://dlcdn.apache.org/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz
+4) descompact file : tar -xzf spark-3.2.0-bin-hadoop3.2.tgz 
+5) remove .gz : rm spark-3.2.0-bin-hadoop3.2.tgz
+
+# CONFIGURING SPARK
+
+1) go to directory: cd spark-3.2.0-bin-hadoop3.2/conf/
+2) copy file env: cp spark-env.sh.template spark-env.sh
+3) configuring spark in hadoop: nano spark-env.sh
+write:
+export HADOOP_CONF_DIR=/home/luis/hadoop-3.3.1/etc/hadoop
+export YARN_CONF_DIR=/home/luis/hadoop-3.3.1/etc/hadoop/
+export PYSPARK_PYTHON=python3
+4)copy slaves template: cp slaves.template slaves
+5) configuring spark slaves: nano slaves
+write:
+localhost
+
+6) Connect Spark: go to: cd /spark-3.2.0-bin-hadoop3.2/sbin
+                  run ./start-all.sh
+7) web page: http://luis-ubuntu.lan:8080/
+
+
+# INTERACTIVE SPARK 
+1) in other command line : 
+cd
+wget https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv
+hadoop-3.3.1/bin/hdfs dfs -put ~/titanic.csv /titanic.csv
+hadoop-3.3.1/bin/hdfs dfs -ls /
+2)cd ~/spark-3.2.0-bin-hadoop3.2/bin
+3)./spark-shell --master yarn --queue dev --name interactive
+4) use scala commands in terminal scala:
+val df = spark.read.format("csv").option("header", true).option("separator",",").load("hdfs:///titanic.csv")
+df.show(10, false)
+ctrl+c
+5) use pyspark : ./pyspark --master yarn --queue dev --name interactive
+df = spark.read.format("csv").option("header", True).option("separator", True).load("hdfs:///titanic.csv")
+df.show(10, False)
+6) submit scripts pyspark: ./spark-submit --master yarn --queue dev ~/script.py
+ 
+# INSTALL HIVE 
+1) go to : https://hive.apache.org/downloads.html
+2) click in download Hive and copy link : https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz
+3)go the directory: cd and download hive: wget https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz
+4) descompact file : tar -xzf apache-hive-3.1.2-bin.tar.gz 
+5) remove .gz : rm apache-hive-3.1.2-bin.tar.gz
+
+# CONFIGURATION HIVE
+1) nano ~/.bashrc
+write:
+export HIVE_HOME=/home/luis/apache-hive-3.1.2-bin
+export PATH=$PATH:$HIVE_HOME/bin
+2)source ~/.bashrc
+3) nano hive-config.sh
+write:
+export HADOOP_HOME=/home/luis/hadoop-3.3.1
+4)criar diretorias no hdfs
+cd ~/hadoop-3.3.1/bin
+./hdfs dfs -ls /
+./hdfs dfs -mkdir /tmp
+./hdfs dfs -mkdir -p /user/hive/warehouse
+5) cd apache-hive-3.1.2-bin/
+./schematool -initSchema -dbType derby
+./hive 
+
+
+
+# CONFIGURE PYSPARK IN CONDA ENVIROMENT
+1) nano ~/.bashrc
+write:
+export SPARK_HOME=/home/hadoop/spark-3.2.0-bin-hadoop3.2
+export PATH=$SPARK_HOME/bin:$PATH
+2) source ~/.bashrc
+3) install conda with python
+4) install spyder or jupyter and use package import findspark
+5) now initiate conda and do code !!!

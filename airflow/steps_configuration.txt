@@ -1,0 +1,40 @@
+step 1
+pip install apache-airflow
+
+step 2 
+export AIRFLOW_HOME=.
+
+step 3
+
+airflow db init
+
+step 4
+
+Cannot use relative path: `sqlite:///./airflow.db` to connect to sqlite. Please use absolute path such as `sqlite:////tmp/airflow.db`
+
+step 5
+airflow users create --username admin --firstname admin --lastname admin --role Admin --email admin@domain.com
+
+step 6
+export AIRFLOW_HOME=.
+airflow webserver -p 8080
+
+step 7
+export AIRFLOW_HOME=.
+airflow scheduler
+
+
+
+to run:
+
+cd workspace/g_challange/airflow/
+
+export AIRFLOW_HOME=.
+
+nohup airflow scheduler &
+
+nohup airflow webserver -p 8090 &
+
+
+uninstall airflow:
+pip uninstall apache-airflow 

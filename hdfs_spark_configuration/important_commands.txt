@@ -1,0 +1,38 @@
+#start apps
+
+~/hadoop-3.3.1/sbin/start-all.sh
+~/spark-3.2.0-bin-hadoop3.2/sbin/start-all.sh
+
+# see apps
+http://localhost:8088/
+http://localhost:9870/
+http://localhost:8080/
+
+# put files in hdfs
+
+~/hadoop-3.3.1/bin/hdfs dfs -put /home/luis/workspace/spark/data/name_file /name_file
+
+# delete files in hdfs
+~/hadoop-3.3.1/bin/hdfs dfs -rm /name_file
+
+# delete dir in hdfs
+~/hadoop-3.3.1/bin/hdfs dfs -rm -R /name_dir
+
+#submit spark apps
+
+~/spark-3.2.0-bin-hadoop3.2/bin/spark-submit --master yarn --queue dev /home/luis/workspace/spark/spark_rdd/name_file
+~/spark-3.2.0-bin-hadoop3.2/bin/spark-submit --master yarn --queue dev /home/luis/workspace/spark/spark_dfs/name_file
+
+
+#stop apps
+
+~/hadoop-3.3.1/sbin/stop-all.sh
+~/spark-3.2.0-bin-hadoop3.2/sbin/stop-all.sh
+
+or
+
+~/hadoop-3.3.1/sbin/stop-all.sh
+~/spark-3.2.0-bin-hadoop3.2/sbin/stop-all.sh
+
+
+~/hadoop-3.3.1/bin/hdfs dfsadmin -safemode leave 

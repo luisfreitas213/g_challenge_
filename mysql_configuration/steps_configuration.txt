@@ -1,0 +1,12 @@
+docker run --name=mysqlg --net airflow_tst_network  --ip 172.19.0.8 -p 3306:3306  -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql
+
+docker run --name mysqlg \
+    --net airflow_tst_network \
+    --ip 172.19.0.8 \
+    -p 3306:3306 \
+    -v mysqlg_data:/var/lib/mysql \
+    -e MYSQL_ROOT_PASSWORD=my-secret-pw \
+    -d mysql:8.0
+# connection dbveaber
+
+https://plus.diolinux.com.br/t/dica-como-instalar-o-mysql-no-docker-e-conectar-no-dbeaver-atualizado-08-2022/47274
